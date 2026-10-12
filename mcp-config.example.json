@@ -1,0 +1,25 @@
+{
+  "_comment": "麦当劳 MCP 配置示例。复制为实际配置后，把占位符换成你的真实 Token，切勿提交真实凭证。",
+  "_token_where_to_get": "https://open.mcd.cn/mcp 个人中心获取 MCD_MCP_TOKEN",
+  "mcpServers": {
+    "mcd": {
+      "type": "http",
+      "url": "https://mcp.mcd.cn",
+      "headers": {
+        "Authorization": "Bearer ${MCD_MCP_TOKEN}"
+      }
+    }
+  },
+  "_env": {
+    "MCD_MCP_TOKEN": "<你的 MCP Token，从环境变量注入，不要硬编码>"
+  },
+  "_supported_clients": [
+    "WorkBuddy",
+    "Claude Code",
+    "Cursor",
+    "Cherry Studio",
+    "Kiro",
+    "Trae",
+    "VSCode"
+  ]
+}
