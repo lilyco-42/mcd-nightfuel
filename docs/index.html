@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麦麦深夜补给官 NightFuel · 在线体验</title>
+<meta name="description" content="夜班/加班场景的麦当劳 MCP Skill：四阶段决策周期 + 咖啡因红线倒推 + 睡眠负担分">
+<style>
+  :root{
+    --bg:#0f1117; --card:#1a1d27; --bar:#242835; --line:#2e3342;
+    --fg:#d6dae4; --dim:#8b93a7; --green:#7ed07e; --red:#ee7874;
+    --cyan:#5ec8d6; --yellow:#deb468; --accent:#ffb733;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.65; padding:24px 16px 60px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto}
+  .win{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:12px; overflow:hidden; margin-bottom:18px;
+    box-shadow:0 8px 32px rgba(0,0,0,.4);
+  }
+  .win-bar{
+    background:var(--bar); padding:10px 14px; display:flex; align-items:center; gap:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot.r{background:#ed6a5e}.dot.y{background:#f5bf4f}.dot.g{background:#62c554}
+  .win-title{margin-left:10px;font-size:12.5px;color:var(--dim);font-family:ui-monospace,Consolas,monospace}
+  .win-body{padding:18px}
+  h1{font-size:22px;margin-bottom:6px;letter-spacing:.3px}
+  .sub{color:var(--dim);font-size:13.5px;margin-bottom:18px}
+  h2{font-size:14px;color:var(--cyan);margin:22px 0 10px;font-weight:600;
+     font-family:ui-monospace,Consolas,monospace}
+  .row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px}
+  .field{flex:1;min-width:180px}
+  label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+  input[type=time],input[type=number],select{
+    width:100%;background:#12151e;border:1px solid var(--line);color:var(--fg);
+    padding:9px 11px;border-radius:7px;font-size:14px;font-family:inherit;
+  }
+  input:focus,select:focus{outline:none;border-color:var(--cyan)}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  .chip{
+    background:#12151e;border:1px solid var(--line);color:var(--dim);
+    padding:6px 12px;border-radius:20px;font-size:12.5px;cursor:pointer;transition:.15s;
+  }
+  .chip:hover{border-color:var(--cyan);color:var(--cyan)}
+  .chip.on{background:rgba(94,200,214,.12);border-color:var(--cyan);color:var(--cyan)}
+  .stage{
+    display:inline-block;background:rgba(255,183,51,.13);color:var(--accent);
+    padding:3px 12px;border-radius:6px;font-size:13px;font-weight:600;margin-bottom:14px;
+  }
+  .kpi{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .kpi>div{
+    flex:1;min-width:120px;background:#12151e;border:1px solid var(--line);
+    border-radius:9px;padding:12px 13px;
+  }
+  .kpi .k{font-size:11.5px;color:var(--dim);margin-bottom:4px}
+  .kpi .v{font-size:19px;font-weight:700;font-family:ui-monospace,Consolas,monospace}
+  .v.stop{color:var(--red)} .v.ok{color:var(--green)} .v.warn{color:var(--yellow)}
+  ul{list-style:none;margin:6px 0}
+  li{padding:7px 0 7px 22px;position:relative;font-size:13.5px;border-bottom:1px dashed rgba(46,51,66,.6)}
+  li:last-child{border-bottom:none}
+  li::before{content:"›";position:absolute;left:6px;color:var(--cyan);font-weight:700}
+  .bar-track{height:7px;background:#12151e;border-radius:4px;overflow:hidden;margin-top:9px}
+  .bar-fill{height:100%;border-radius:4px;transition:width .35s ease}
+  .note{
+    background:rgba(238,120,116,.07);border:1px solid rgba(238,120,116,.28);
+    border-left:3px solid var(--red);border-radius:7px;padding:12px 14px;
+    font-size:12.5px;color:#f0b3b1;margin-top:14px;
+  }
+  .note b{color:var(--red)}
+  .ok-note{
+    background:rgba(126,208,126,.07);border:1px solid rgba(126,208,126,.25);
+    border-left:3px solid var(--green);color:#b6dfb6;
+  }
+  .ok-note b{color:var(--green)}
+  pre{
+    background:#12151e;border:1px solid var(--line);border-radius:7px;
+    padding:12px 13px;font-size:11.5px;overflow-x:auto;color:var(--dim);
+    font-family:ui-monospace,Consolas,monospace;line-height:1.7;margin-top:10px;
+  }
+  .g{color:var(--green)} .c{color:var(--cyan)} .y{color:var(--yellow)} .r{color:var(--red)}
+  a{color:var(--cyan);text-decoration:none;border-bottom:1px dotted rgba(94,200,214,.45)}
+  .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .btn{
+    background:#12151e;border:1px solid var(--line);color:var(--fg);
+    padding:9px 15px;border-radius:7px;font-size:13px;cursor:pointer;transition:.15s;
+  }
+  .btn:hover{border-color:var(--cyan);color:var(--cyan)}
+  .foot{text-align:center;color:var(--dim);font-size:11.5px;margin-top:26px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="win">
+    <div class="win-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="win-title">nightfuel · 麦麦深夜补给官</span>
+    </div>
+    <div class="win-body">
+      <h1>🌙 这一夜怎么过，才不会毁掉明天</h1>
+      <p class="sub">夜班不是"点一餐"，是四阶段的完整决策周期。下面是交互演示 —— 算法与开源仓库 <code>src/nightfuel/</code> 完全一致。</p>
+
+      <h2>① 你的状态</h2>
+      <div class="presets" id="presets">
+        <span class="chip on" data-p="ns">夜班运维</span>
+        <span class="chip" data-p="ot">加班赶稿</span>
+        <span class="chip" data-p="cu">深夜客服</span>
+        <span class="chip" data-p="ex">考试周</span>
+      </div>
+
+      <div class="row">
+        <div class="field"><label>现在时间</label><input type="time" id="now" value="01:30"></div>
+        <div class="field"><label>目标入睡时间</label><input type="time" id="sleep" value="07:00"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>今日已摄入咖啡因 (mg)</label><input type="number" id="caf" value="290" min="0" max="1200" step="10"></div>
+        <div class="field"><label>本餐钠含量 (mg，参考)</label><input type="number" id="na" value="1025" min="0" max="4000" step="25"></div>
+      </div>
+
+      <h2>② 今夜补给包</h2>
+      <div class="stage" id="stage">深夜</div>
+      <div class="kpi">
+        <div><div class="k">咖啡因剩余额度</div><div class="v ok" id="remain">110 mg</div></div>
+        <div><div class="k">最后一杯截止</div><div class="v warn" id="cutoff">02:00</div></div>
+        <div><div class="k">建议停止进食</div><div class="v" id="stopEat">05:00</div></div>
+        <div><div class="k">睡眠负担分</div><div class="v" id="load">22</div></div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="loadBar" style="width:22%;background:var(--green)"></div></div>
+
+      <h2>③ 阶段策略与裁决</h2>
+      <ul id="advice"></ul>
+
+      <div class="note" id="cafNote"></div>
+      <div class="note ok-note" id="mcpNote"></div>
+    </div>
+  </div>
+
+  <div class="win">
+    <div class="win-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="win-title">真实 MCP 调用取证</span>
+    </div>
+    <div class="win-body">
+      <h2 style="margin-top:0">这些数字不是编的</h2>
+      <p class="sub" style="margin-bottom:12px">本项目全部契约由真实调用 <code>https://mcp.mcd.cn</code>（mcd-mcp v1.0.0）实测得出。以下是其中一条链路：</p>
+      <pre><span class="c">query-nearby-stores</span>  → storeCode <span class="g">1450323</span> 上海徐汇漕溪北路百脑汇餐厅
+<span class="c">query-meals</span>          → {"code":"9900004064","tags":["爆款"]}
+<span class="r">                       ↑ 只有 code 和 tags，没有名称、没有价格</span>
+<span class="c">calculate-price</span>       → "productName": <span class="g">"精选单人餐三件套"</span>
+                         "price": <span class="g">3450</span>   <span class="y">← 单位是「分」= 34.50 元</span>
+<span class="c">list-nutrition-foods</span>  → 能量/蛋白/脂肪/碳水/钠/钙  <span class="r">（无咖啡因字段）</span></pre>
+      <div class="links">
+        <button class="btn" onclick="window.open('https://github.com/lilyco-42/mcd-nightfuel','_blank')">⭐ GitHub 仓库</button>
+        <button class="btn" onclick="window.open('https://github.com/M-China/mcd-developer-innovation-challenge/issues/505','_blank')">🏆 参赛作品 #505</button>
+        <button class="btn" onclick="window.open('https://github.com/lilyco-42/mcd-nightfuel/releases/tag/v0.1.0','_blank')">📦 Release v0.1.0</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">
+    算法与开源仓库 <code>src/nightfuel/</code> 一致 · 24 个本地测试覆盖<br>
+    咖啡因数据来自本地公开基准表（MCP <code>list-nutrition-foods</code> 不含咖啡因字段），已如实标注<br>
+    个人参赛作品，与麦当劳、腾讯 WorkBuddy 无隶属或背书关系
+  </p>
+</div>
+
+<script>
+/* ---- 算法：与 src/nightfuel/caffeine.py + planner.py 逐行对应 ---- */
+const DAILY_LIMIT = 400, HALF_LIFE_H = 5;
+
+const toMin = hhmm => { const [h,m] = hhmm.split(':').map(Number); return h*60+m; };
+const toHHMM = m => { const mm = Math.round(m) % (24*60);
+  return `${String(Math.floor(mm/60)).padStart(2,'0')}:${String(mm%60).padStart(2,'0')}`; };
+
+function stageOf(hour){
+  const h = hour % 24;
+  if (18 <= h && h < 21) return '入夜';
+  if (h >= 21 || h < 1) return '续航';
+  if (h >= 1 && h < 4) return '深夜';
+  return '收尾';
+}
+
+const POLICY = {
+  '入夜':'主食打底 + 第一杯咖啡，之后进入续航',
+  '续航':'顶饱为主，低渣少油，咖啡配额在这里用掉',
+  '深夜':'轻食优先，少油少钠，把钠和热量压下去',
+  '收尾':'低咖啡因，温食为主，睡前 2 小时停止进食'
+};
+const COMBO = {
+  '入夜':['麦辣鸡腿堡三件套','鲜煮咖啡（中杯）'],
+  '续航':['吉士汉堡堡','中薯条','鲜煮咖啡（中杯）'],
+  '深夜':['麦香鱼','麦茶'],
+  '收尾':['红豆派','麦茶']
+};
+
+function caffeineBudget(sleepTime, nowTime, consumed){
+  const nowMin = toMin(nowTime);
+  let sleepMin = toMin(sleepTime);
+  if (sleepMin <= nowMin) sleepMin += 24*60;      // 跨零点归一到同一时间轴
+  const cutoffMin = sleepMin - HALF_LIFE_H*60;
+  const remaining = Math.max(0, DAILY_LIMIT - consumed);
+  let verdict;
+  if (consumed >= DAILY_LIMIT || nowMin >= cutoffMin) verdict = 'stop';
+  else if (cutoffMin - nowMin < 60) verdict = 'one_more';
+  else verdict = 'ok';
+  return { cutoff: toHHMM(cutoffMin), remaining, verdict };
+}
+
+function sleepLoad(caffeine, sodium, kcal){
+  let score = 0; const tips = [];
+  if (caffeine > 0){
+    score += Math.min(60, Math.floor(caffeine/400*100*0.6));
+    tips.push(`咖啡因 ${caffeine}mg，距入睡不足一个半衰期，仍会残留约 ${Math.floor(caffeine/2)}mg`);
+  }
+  if (sodium > 800){
+    score += Math.min(20, Math.floor((sodium-800)/200));
+    tips.push(`钠 ${sodium}mg 偏高，口渴影响睡眠，建议配无糖饮品`);
+  }
+  if (kcal > 700){
+    score += Math.min(20, Math.floor((kcal-700)/150));
+    tips.push(`能量 ${kcal}kcal 偏高，深夜消化负担重`);
+  }
+  return { score: Math.min(100, score), tips };
+}
+
+function advice(b, stage, load, consumed){
+  const out = [`阶段策略：${POLICY[stage]}`, `阶段推荐：${COMBO[stage].join('、')}`];
+  if (b.verdict === 'stop') out.push(`咖啡因红线：已过 ${b.cutoff}，今晚别再喝，转麦茶/无糖可乐`);
+  else if (b.verdict === 'one_more') out.push(`咖啡因：还剩 ${b.remaining}mg，距 ${b.cutoff} 不足 1h —— 最多再来一杯中杯`);
+  else out.push(`咖啡因：额度充足（剩 ${b.remaining}mg），但别晚于 ${b.cutoff}`);
+  out.push(`停止进食：${toHHMM((toMin(sleep.value) + 24 - 2) % (24*60))}（睡前 2 小时）`);
+  load.tips.forEach(t => out.push(`睡眠负担：${t}`));
+  if (load.score >= 45) out.push('⚠️ 本餐睡眠负担偏高，建议换轻食或减半');
+  return out;
+}
+
+function render(){
+  const nowV = now.value, sleepV = sleep.value;
+  const consumed = +caf.value || 0, sodium = +na.value || 0, kcal = +document.getElementById('kcal').value || 0;
+  const stage = stageOf(toMin(nowV)/60 | 0);
+  const b = caffeineBudget(sleepV, nowV, consumed);
+  const load = sleepLoad(consumed, sodium, kcal);
+
+  stageEl.textContent = `${stage} · ${nowV}`;
+  remain.textContent = b.remaining + ' mg';
+  remain.className = 'v ' + (b.verdict === 'stop' ? 'stop' : b.verdict === 'one_more' ? 'warn' : 'ok');
+  cutoff.textContent = b.cutoff;
+  cutoff.className = 'v ' + (b.verdict === 'stop' ? 'stop' : 'warn');
+  stopEat.textContent = toHHMM((toMin(sleepV) + 24 - 2) % (24*60));
+  loadV.textContent = load.score;
+  loadV.className = 'v ' + (load.score >= 45 ? 'stop' : load.score >= 25 ? 'warn' : 'ok');
+  loadBar.style.width = load.score + '%';
+  loadBar.style.background = load.score >= 45 ? 'var(--red)' : load.score >= 25 ? 'var(--yellow)' : 'var(--green)';
+
+  adviceEl.innerHTML = advice(b, stage, load, consumed).map(t => `<li>${t}</li>`).join('');
+
+  cafNote.innerHTML = b.verdict === 'stop'
+    ? `<b>咖啡裁决</b> ${consumed >= DAILY_LIMIT
+        ? `今日已摄入 ${consumed}mg，已达 400mg 上限`
+        : `已过 ${b.cutoff}（入睡 − 半衰期 5h）`} —— 再喝就睡不着了。`
+    : b.verdict === 'one_more'
+      ? `<b>咖啡裁决</b> 还剩 ${b.remaining}mg 额度，且未过 ${b.cutoff} —— 最多再来一杯中杯，之后转无咖啡因饮品。`
+      : `<b>咖啡裁决</b> 额度充足（剩 ${b.remaining}mg）。但 ${b.cutoff} 之后必须停。`;
+}
+
+const PRESETS = {
+  ns:{ now:'01:30', sleep:'07:00', caf:290, na:1025 },
+  ot:{ now:'22:40', sleep:'02:30', caf:150, na:780 },
+  cu:{ now:'03:10', sleep:'11:00', caf:320, na:1200 },
+  ex:{ now:'02:20', sleep:'06:30', caf:420, na:650 }
+};
+
+document.getElementById('presets').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  chip.classList.add('on');
+  const p = PRESETS[chip.dataset.p];
+  now.value = p.now; sleep.value = p.sleep; caf.value = p.caf; na.value = p.na;
+  render();
+});
+
+['now','sleep','caf','na','kcal'].forEach(id => document.getElementById(id).addEventListener('input', render));
+const stageEl = document.getElementById('stage'), remain = document.getElementById('remain'),
+      cutoff = document.getElementById('cutoff'), stopEat = document.getElementById('stopEat'),
+      loadV = document.getElementById('load'), loadBar = document.getElementById('loadBar'),
+      adviceEl = document.getElementById('advice'), cafNote = document.getElementById('cafNote');
+
+// 补一个热量输入（前端演示用，真实值来自 MCP list-nutrition-foods）
+const kcalField = document.createElement('div');
+kcalField.className = 'field';
+kcalField.innerHTML = '<label>本餐热量 (kcal，参考)</label><input type="number" id="kcal" value="560" min="0" max="2000" step="10">';
+document.getElementById('na').closest('.row').appendChild(kcalField);
+document.getElementById('kcal').addEventListener('input', render);
+
+render();
+</script>
+</body>
+</html>
