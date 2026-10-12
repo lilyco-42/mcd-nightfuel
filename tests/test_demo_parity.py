@@ -1,18 +1,23 @@
-"""Demo（demo/index.html）与 Python 引擎的交叉一致性测试。
+"""Demo（docs/index.html）与 Python 引擎的交叉一致性测试。
 
 Demo 里的 JS 算法是从 src/nightfuel/ 移植的。两套实现必须逐案一致，
 否则用户看到的和 Skill 实际跑出来的会是两个结果 —— 这是可信度问题。
 
-本测试把 demo/index.html 里的 JS 算法抽出来，用 Node 执行，
+本测试把 docs/index.html 里的 JS 算法抽出来，用 Node 执行，
 与 Python 引擎在同一批输入上的输出做逐字段比对。
 
     python -m unittest tests.test_demo_parity -v
+
+Node 定位顺序：环境变量 NIGHTFUEL_NODE → PATH 里的 node → 本机开发机 fallback。
+都找不到时**明确报错而不是跳过**——跳过会让「一致性验证」变成假绿。
 """
 
 from __future__ import annotations
 
 import json
+import os
 import re
+import shutil
 import subprocess
 import sys
 import unittest
@@ -22,7 +27,22 @@ ROOT = Path(__file__).resolve().parents[1]
 # Demo 在 docs/index.html（GitHub Pages 只支持 / 或 /docs，故不放 demo/）
 DEMO_HTML = ROOT / "docs" / "index.html"
 
-NODE = r"C:/Users/liuqi/.workbuddy/binaries/node/versions/22.22.2-6/node.exe"
+
+def _find_node() -> str:
+    """定位 Node 可执行文件。找不到就抛错，让 CI 红，而不是静默跳过。"""
+    override = os.environ.get("NIGHTFUEL_NODE")
+    if override and os.path.exists(override):
+        return override
+    found = shutil.which("node")
+    if found and os.path.exists(found):
+        return found
+    local = r"C:/Users/liuqi/.workbuddy/binaries/node/versions/22.22.2-6/node.exe"
+    if os.path.exists(local):
+        return local
+    raise RuntimeError(
+        "找不到 Node.js。parity 测试需要 Node 执行 Demo 的 JS 算法；"
+        "请安装 Node，或用环境变量 NIGHTFUEL_NODE 指定 node 可执行文件路径。"
+    )
 
 # (now, sleep, consumed_mg)
 CAFFEINE_CASES = [
@@ -105,7 +125,7 @@ def run_js(cases: list[dict]) -> list[dict]:
         "stage:stageOf(+c.now.slice(0,2))});}}console.log(JSON.stringify(out));"
     )
     proc = subprocess.run(
-        [NODE, "-e", script], capture_output=True, text=True, encoding="utf-8"
+        [_find_node(), "-e", script], capture_output=True, text=True, encoding="utf-8"
     )
     module.unlink(missing_ok=True)
     if proc.returncode != 0:

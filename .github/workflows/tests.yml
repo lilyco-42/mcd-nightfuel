@@ -23,6 +23,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Set up Node.js (parity tests need it)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Run unit + parity tests
         run: python -m unittest discover -s tests -v
 
