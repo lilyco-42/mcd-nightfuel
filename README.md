@@ -40,11 +40,15 @@
 
 ### 实测发现的 3 个「文档没写」的坑
 
+![参数对比](assets/card-params.png)
+
 | 坑 | 现象 | 后果 |
 |---|---|---|
 | 🔴 **门店查询要 city + keyword 一起给** | 只给 city 报 `600050`，只给 keyword 报 `600058` | 按官方 README 猜参数必然失败 |
 | 🔴 **`query-meals` 不返回名称和价格** | 只给 `{"code":"9900004064","tags":["爆款"]}` | 不查核价就答不出「多少钱」 |
 | 🔴 **schema 没有经纬度入参** | properties 只有 `beType`/`city`/`keyword`/`searchType` | 自造 latitude/longitude 是错的 |
+
+![菜单接口](assets/card-menu.png)
 
 另有已实证的单位陷阱：`calculate-price` 返回**分**（`price=3450` → **34.50 元**），
 而 `order-list` 返回**元的字符串**，两者方向相反。
