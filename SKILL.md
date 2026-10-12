@@ -32,6 +32,7 @@ agent_created: true
    品名与单价必须从 `calculate-price` 的 `productList[].productName` / `subtotal` 反查。
 3. **咖啡因数据不是 MCP 的**：`list-nutrition-foods` 只有能量/蛋白质/脂肪/碳水/钠/钙，**不含咖啡因**。
    咖啡因用本地基准表（见 `src/nightfuel/caffeine.py` 的 `CAFFEINE_MG`），回答时要说明这是估算基准而非 MCP 实时值。
+   半衰期 5h 与 400mg 上限的公开依据见 [`references/night-shift-physiology.md`](references/night-shift-physiology.md)。
 4. **写操作默认拦截**：`create-order` / `auto-bind-coupons` / `cancel-order` 一律先展示方案 + 二次确认，
    用户明确同意后才调用。不得在一次对话里自动连问。
 5. **单位陷阱**：`calculate-price` 返回**分**（实测 `price=3450` → 34.50 元），`order-list` 返回**元的字符串**，两者相反，混用=数量级错误。

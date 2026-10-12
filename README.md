@@ -134,7 +134,8 @@ Demo 里的算法与 `src/nightfuel/` **逐案一致** —— 这不是手写前
 
 > 📌 数据来源诚实声明：麦当劳 MCP `list-nutrition-foods` 返回能量、蛋白质、脂肪、碳水化合物、钠、钙，
 > **不含咖啡因字段**。因此咖啡因用量取自本地公开基准表（`src/nightfuel/caffeine.py`），
-> 我们**不会把估算值说成 MCP 实时数据**。
+> 我们**不会把估算值说成 MCP 实时数据**。半衰期 5h / 400mg 上限 / 睡前 2h 的公开依据见
+> [`references/night-shift-physiology.md`](references/night-shift-physiology.md)。
 
 ## 四个夜班阶段的建议差异
 
@@ -214,6 +215,7 @@ PYTHONPATH=src python -m nightfuel trap                                   # 凑�
 ├── docs/index.html               # 在线 Demo（GitHub Pages）
 ├── demo.py                       # 零配置演示入口
 ├── assets/                       # banner / demo.gif / 社交卡片
+├── references/                   # 算法依据的公开标准与文献（FDA/EFSA/IOM）
 ├── tests/
 │   ├── test_nightfuel.py         # 引擎与契约测试
 │   └── test_demo_parity.py       # JS/Python 算法一致性（18 用例，Node 交叉执行）
