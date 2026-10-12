@@ -19,7 +19,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEMO_HTML = ROOT / "demo" / "index.html"
+# Demo 在 docs/index.html（GitHub Pages 只支持 / 或 /docs，故不放 demo/）
+DEMO_HTML = ROOT / "docs" / "index.html"
 
 NODE = r"C:/Users/liuqi/.workbuddy/binaries/node/versions/22.22.2-6/node.exe"
 
@@ -112,7 +113,7 @@ def run_js(cases: list[dict]) -> list[dict]:
     return json.loads(proc.stdout)
 
 
-@unittest.skipIf(not DEMO_HTML.exists(), "demo/index.html 不存在")
+@unittest.skipUnless(DEMO_HTML.exists(), "docs/index.html 不存在")
 class TestDemoParity(unittest.TestCase):
     """Demo 的 JS 实现必须与 Python 引擎逐案一致。"""
 
