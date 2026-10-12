@@ -1,0 +1,42 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run unit + parity tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Run zero-config demo (offline, fixtures-based)
+        run: python demo.py
+
+      - name: Verify no real token in tracked files
+        run: |
+          if git grep -nE "MCD_MCP_TOKEN=[\"']?[A-Za-z0-9]{16,}" ; then
+            echo "::error::tracked file contains a real-looking MCD_MCP_TOKEN assignment"
+            exit 1
+          fi
+          if git grep -nE "Bearer [A-Za-z0-9]{20,}" ; then
+            echo "::error::tracked file contains a hardcoded Bearer credential"
+            exit 1
+          fi
+          echo "no real token in tracked files: OK"

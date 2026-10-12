@@ -37,6 +37,12 @@ agent_created: true
 5. **单位陷阱**：`calculate-price` 返回**分**（实测 `price=3450` → 34.50 元），`order-list` 返回**元的字符串**，两者相反，混用=数量级错误。
 6. **门店查询必须同时给 city 和 keyword**：只给其一分别报 `600058`（缺 keyword）/ `600050`（缺 city）。
    schema 也**没有经纬度入参**，别自造字段。
+7. **查菜单前先查营业状态**：`query-nearby-stores` 返回 `businessStatus`（布尔）与
+   `businessStartTime` / `businessEndTime`。**深夜场景必须先看这个字段**——非 24h 门店在非营业时段
+   查菜单会报 `600057 门店可能已关闭或不在营业时间`。凌晨 1 点用户问「还有麦当劳吗」，
+   正确答案就是这个字段，不是一句错误码。24h 门店表现为 `00:00` - `23:59`。
+8. **商品售罄会单独报错**：`60006 商品已售罄或不可售`。写商品编码时不要假设长期在售，
+   报错时换同品类商品（实测：蓝莓派 521950 已下架，麦香鱼 9900015856 正常在售）。
 
 ## 执行链路（按顺序）
 
@@ -44,8 +50,10 @@ agent_created: true
 1. now-time-info                 → 当前时间，判定夜班第几小时
 2. caffeine_budget()             → 按目标入睡时间倒推咖啡因红线，裁决 stop/one_more/ok
 3. query-nearby-stores           → city + keyword + beType + searchType（四项缺一不可）
+   └─ 先看返回的 businessStatus → false 就直接告诉用户「这家店现在打烊」+ 给营业时间，
+      不要继续查菜单（否则 600057）
 4. query-meals                   → 确认该门店此刻真实在售（storeCode+orderType+beType）
-   ⚠️ 只返回 code/tags，品名与价格要靠下一步反查
+   ⚠️ 只返回 code/tags，品名与价格要靠下一步反查；遇 60006 换同品类在售商品
 5. calculate-price               → 唯一计价来源；品名/单价也从这里取（单位：分）
 6. list-nutrition-foods          → 能量/钠，叠加咖啡因基准表 → 睡眠负担分
 7. query-store-coupons           → 该门店可用券
@@ -84,7 +92,8 @@ agent_created: true
 ## 本地验证（无需 MCP Token）
 
 ```bash
-python -m unittest discover -s tests -v        # 24 个本地测试
+python -m unittest discover -s tests -v        # 28 个本地测试（含 JS/Python 算法一致性 18 例）
+python demo.py                                # 零配置演示：读 fixtures/ 里录制的真实 MCP 响应
 PYTHONPATH=src python -m nightfuel plan --now 01:30 --sleep 07:00 --consumed 290 --demo
 PYTHONPATH=src python -m nightfuel trap        # 凑单陷阱检测演示
 ```

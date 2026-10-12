@@ -52,6 +52,7 @@
 
 | 发现 | 说明 |
 |---|---|
+| 🔴 **`query-nearby-stores` 返回 `businessStatus`——查菜单前必看** | 门店对象含 `businessStatus`（布尔）、`businessStartTime` / `businessEndTime`（如 `"06:30"` - `"23:59"`）。**非 24h 门店在非营业时段继续查 `query-meals` 会报 `600057 门店可能已关闭或不在营业时间`**。这是夜班场景的第一决策点：用户凌晨问「还有麦当劳吗」，正确答案是这个字段而非错误码。24h 门店表现为 `00:00` - `23:59`（实测门店 `1450034`） |
 | 🔴 **`query-nearby-stores` 的 `city` 与 `keyword` 必须同时提供** | 只给 `city` 或只给 `keyword` 都会失败：`keyword` 缺失报 `600058 城市名或者关键词不能为空`；`city` 缺失报 `600050 收藏餐厅列表为空，请您提供城市+关键词进行搜索`。实测 `{"city":"上海","keyword":"徐家汇","searchType":2,"beType":1}` 返回成功（门店 `1450323` 上海徐汇漕溪北路百脑汇餐厅） |
 | 🔴 **schema 不暴露 latitude/longitude** | 官方 inputSchema 的 properties 只有 `beType` / `city` / `keyword` / `searchType`，**没有经纬度入参**。定位由服务端按 city+keyword 处理，别自造经纬度字段 |
 | **必传字段以 inputSchema.required 为准** | `query-nearby-stores` → `["beType","searchType"]`；`query-meals` 与 `calculate-price` → `["storeCode","orderType","beType"]` |
@@ -67,8 +68,10 @@
 | **`order-list` 无需任何参数** | 传参反而校验失败 |
 | **历史订单含退款单** | `orderStatus` 有「整单退款」，必须过滤，否则消费画像虚高 |
 | **`list-nutrition-foods` 不含咖啡因** | `required: []`，返回能量、蛋白质、脂肪、碳水化合物、钠、钙；**无咖啡因字段** |
+| **商品售罄 / 门店暂停营业有专属错误码** | `60006 商品已售罄或不可售`（实测商品 `521950` 蓝莓派已下架，换 `9900015856` 麦香鱼后正常）；`60003 门店暂停营业，请重新选择门店`。报错时换同品类在售商品，不要重试同一编码 |
 | **工具总数 35 个** | 以 `tools/list` 实测为准（README 文本中夹有客户端名，勿据此计数） |
 | **限流** | 超过 600 次/分钟返回 429 |
+| **5 个实测错误码已固化为代码** | `src/nightfuel/mcp_adapter.py` 的 `ERROR_CODES` + `explain_error()`：`600050` / `600058` / `600057` / `60003` / `60006`，全部由 `fixtures/` 录制时真实复现 |
 
 > ⚠️ **最容易出错的地方**：`calculate-price` 单位是「分」，`order-list` 是「元」，两者方向相反。
 > ⚠️ **最容易漏掉的坑**：`query-meals` 不给品名和价格。不查 `calculate-price` 就无法告诉用户「这个多少钱」。
@@ -89,6 +92,15 @@ $ python tools/verify_mcp.py        # Token 仅从环境变量读取
 
 验证脚本 `tools/verify_mcp.py` 不含任何 Token，仅从环境变量 `MCD_MCP_TOKEN` 读取。
 验证过程**未调用任何写操作**（未下单、未领券、未取消订单）。
+
+fixtures 补录（2026-10-13 凌晨，`python tools/record_fixtures.py`）：
+
+```text
+- 24h 门店 1450034        → businessStatus=true，06:30-23:59 / 00:00-23:59 双记录
+- 非 24h 门店非营业时段    → 600057 门店可能已关闭或不在营业时间（真实复现）
+- 售罄商品 521950 蓝莓派   → 60006 商品已售罄或不可售（真实复现）
+- 暂停营业门店             → 60003 门店暂停营业（真实复现）
+```
 
 上述契约已在 `src/nightfuel/mcp_adapter.py` 中以**运行时断言**固化（`ContractError`），
 并在 `tests/test_nightfuel.py` 中有对应测试，不会因文档缺失而靠猜。

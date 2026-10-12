@@ -58,6 +58,31 @@ ORDER_TYPE = {
     2: "外送（含麦乐送 + 企业团餐）",
 }
 
+# 实测错误码（2026-10-13 录制 fixtures 时全部真实复现）
+ERROR_CODES = {
+    600050: "收藏餐厅列表为空，请您提供城市+关键词进行搜索（缺 city）",
+    600058: "城市名或者关键词不能为空（缺 keyword）",
+    600057: "门店可能已关闭或不在营业时间（夜班场景高发）",
+    60003: "门店暂停营业，请重新选择门店",
+    60006: "商品已售罄或不可售，换一个商品或检查 orderType/beType",
+}
+
+
+def explain_error(code: int) -> str:
+    """把实测错误码翻译成人话。夜班场景最常见的是 600057（打烊）。"""
+    return ERROR_CODES.get(code, f"未记录的错误码 {code}，请查官方文档")
+
+
+def is_store_open(store: dict[str, Any]) -> bool:
+    """门店此刻是否营业。
+
+    实测：`query-nearby-stores` 返回 `businessStatus`（布尔）与
+    `businessStartTime` / `businessEndTime`（如 "06:30" - "23:00"）。
+    **先查它再查菜单**，否则非营业时段会拿到 600057。
+    24h 门店表现为 `00:00` - `23:59`。
+    """
+    return bool(store.get("businessStatus"))
+
 
 class ContractError(ValueError):
     """违反实测调用契约时抛出，避免把参数错误当成业务空结果。"""

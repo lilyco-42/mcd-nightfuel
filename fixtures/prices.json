@@ -1,0 +1,42 @@
+{
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "datetime": "2026-10-13 00:41:42",
+  "traceId": "ce96f68eb2456be58589ef79f4b7ecb4",
+  "data": {
+    "productOriginalPrice": 11870,
+    "productPrice": 11870,
+    "originalPrice": 11870,
+    "discount": 0,
+    "price": 11870,
+    "productList": [
+      {
+        "productCode": "9900015856",
+        "productName": "“泷”运当头四件套",
+        "quantity": 1,
+        "originalSubtotal": 9170,
+        "subtotal": 9170
+      },
+      {
+        "productCode": "521953",
+        "productName": "龙焰芝士棒鸡腿堡",
+        "quantity": 1,
+        "originalSubtotal": 2700,
+        "subtotal": 2700
+      }
+    ],
+    "takeWayList": [
+      {
+        "code": "eat-in",
+        "title": "堂食",
+        "subtitle": "店内用餐"
+      },
+      {
+        "code": "locker-in",
+        "title": "外带",
+        "subtitle": "店内取餐柜"
+      }
+    ]
+  }
+}
