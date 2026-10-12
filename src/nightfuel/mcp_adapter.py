@@ -39,11 +39,23 @@ def yuan_str_to_yuan(text: str | None) -> Decimal:
 # ---------------------------------------------------------------------------
 
 CONTRACT_NOTES = {
-    "query-nearby-stores": "必须带 beType + searchType；到店自提 beType=1，searchType=1 收藏门店 / 2 按位置",
-    "query-meals": "必须带 storeCode + orderType + beType；到店自取 orderType=1, beType=1",
-    "query-store-coupons": "必须带 storeCode + orderType + beType",
-    "calculate-price": "商品字段是 items=[{productCode, quantity}]，不是 meals",
+    "query-nearby-stores": "必传 beType + searchType；还须带 city 或 keyword，否则报 600058",
+    "query-meals": "必传 storeCode + orderType + beType；beCode 与 storeCode 配对",
+    "query-store-coupons": "必传 storeCode + orderType + beType",
+    "calculate-price": "必传 storeCode+orderType+beType；商品字段是 items，不是 meals",
     "order-list": "不接受任何参数，传参反而校验失败",
+}
+
+# 以下取值取自官方 inputSchema（2026-10-12 实测 tools/list 核对）
+BE_TYPE = {
+    1: "到店自提",
+    2: "麦乐送到家",
+    5: "得来速车道取餐(Drive Through)",
+    6: "企业团餐",
+}
+ORDER_TYPE = {
+    1: "到店（含到店自取 + 得来速车道取餐）",
+    2: "外送（含麦乐送 + 企业团餐）",
 }
 
 
@@ -53,31 +65,52 @@ class ContractError(ValueError):
 
 def nearby_store_params(
     *,
-    latitude: float,
-    longitude: float,
-    search_type: int = 2,
-    be_type: int = 1,
+    be_type: int,
+    search_type: int,
+    city: str | None = None,
+    keyword: str | None = None,
 ) -> dict[str, Any]:
-    """query-nearby-stores 入参。beType/searchType 为必传，缺任一直接报错。"""
-    if be_type not in (1, 2):
-        raise ContractError(f"beType 非法: {be_type}（1=到店自提, 2=麦乐送）")
+    """query-nearby-stores 入参。
+
+    实测结论：只给经纬度会报 ``600058城市名或者关键词不能为空``。
+    官方 schema 也未暴露 latitude/longitude 入参 —— 定位由服务端按
+    city/keyword + searchType 处理，故必须提供 city 或 keyword 之一。
+    """
+    if be_type not in BE_TYPE:
+        raise ContractError(f"beType 非法: {be_type}（可选 {sorted(BE_TYPE)}）")
     if search_type not in (1, 2):
         raise ContractError(f"searchType 非法: {search_type}（1=收藏门店, 2=按位置）")
-    return {
-        "latitude": latitude,
-        "longitude": longitude,
-        "searchType": search_type,
-        "beType": be_type,
-    }
+    if not city and not keyword:
+        raise ContractError("city 与 keyword 至少提供一个，否则服务端报 600058")
+    params: dict[str, Any] = {"beType": be_type, "searchType": search_type}
+    if city:
+        params["city"] = city
+    if keyword:
+        params["keyword"] = keyword
+    return params
 
 
-def store_context_params(*, store_code: str, order_type: int = 1, be_type: int = 1) -> dict[str, Any]:
-    """菜单/券查询的三件套：storeCode + orderType + beType，缺一不可。"""
+def store_context_params(
+    *,
+    store_code: str,
+    order_type: int = 1,
+    be_type: int = 1,
+    be_code: str | None = None,
+) -> dict[str, Any]:
+    """菜单/券/核价查询的三件套：storeCode + orderType + beType，缺一不可。
+
+    beCode 与 storeCode 配对使用，从 query-nearby-stores 返回结果中一并取回。
+    """
     if not store_code:
         raise ContractError("storeCode 不能为空：菜单与券查询都依赖门店上下文")
-    if order_type not in (1, 2):
-        raise ContractError(f"orderType 非法: {order_type}（1=到店自取, 2=麦乐送）")
-    return {"storeCode": store_code, "orderType": order_type, "beType": be_type}
+    if order_type not in ORDER_TYPE:
+        raise ContractError(f"orderType 非法: {order_type}（可选 {sorted(ORDER_TYPE)}）")
+    if be_type not in BE_TYPE:
+        raise ContractError(f"beType 非法: {be_type}（可选 {sorted(BE_TYPE)}）")
+    params: dict[str, Any] = {"storeCode": store_code, "orderType": order_type, "beType": be_type}
+    if be_code:
+        params["beCode"] = be_code
+    return params
 
 
 def calculate_price_items(items: Iterable[tuple[str, int]]) -> list[dict[str, Any]]:
@@ -132,6 +165,7 @@ class PriceSnapshot:
     discount_fen: int = 0
     balance_fen: int = 0  # enjoyable.balance：距可享受优惠还差多少分
     labels: list[str] = field(default_factory=list)
+    items: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_response(cls, resp: dict[str, Any]) -> "PriceSnapshot":
@@ -141,7 +175,25 @@ class PriceSnapshot:
             discount_fen=int(resp.get("discount") or 0),
             balance_fen=int(enjoyable.get("balance") or 0),
             labels=list(resp.get("couponNames") or []),
+            items=list(resp.get("productList") or []),
         )
+
+    def item_names(self) -> list[str]:
+        """品名只在这里才有。
+
+        实测：``query-meals`` 返回的 ``meals`` 数组**只有 code 和 tags，没有名称和价格**；
+        品名与单价须从 ``calculate-price`` 的 ``productList[].productName`` 反查。
+        """
+        return [str(i.get("productName", "")) for i in self.items if i.get("productName")]
+
+    def unit_fen(self, product_code: str) -> int:
+        """按 productCode 反查单价（分），用于睡眠负担等计算。"""
+        for item in self.items:
+            if item.get("productCode") == product_code:
+                qty = int(item.get("quantity") or 1)
+                sub = int(item.get("subtotal") or 0)
+                return sub // qty if qty else sub
+        return 0
 
 
 def detect_coupon_trap(

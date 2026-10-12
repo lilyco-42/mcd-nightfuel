@@ -27,24 +27,29 @@ agent_created: true
 ## 核心约束（违反即出错）
 
 1. **禁止编造价格**：所有金额必须来自 MCP `calculate-price`。没有实时数据就明确说「需实时核价」。
-2. **禁止编造在售状态**：必须先 `query-meals` 确认该门店当前实际在售。
+2. **禁止编造在售状态与品名**：必须先 `query-meals` 确认门店当前在售；
+   ⚠️ `query-meals` 只返回 `code` 和 `tags`，**没有名称也没有价格**，
+   品名与单价必须从 `calculate-price` 的 `productList[].productName` / `subtotal` 反查。
 3. **咖啡因数据不是 MCP 的**：`list-nutrition-foods` 只有能量/蛋白质/脂肪/碳水/钠/钙，**不含咖啡因**。
    咖啡因用本地基准表（见 `src/nightfuel/caffeine.py` 的 `CAFFEINE_MG`），回答时要说明这是估算基准而非 MCP 实时值。
 4. **写操作默认拦截**：`create-order` / `auto-bind-coupons` / `cancel-order` 一律先展示方案 + 二次确认，
    用户明确同意后才调用。不得在一次对话里自动连问。
-5. **单位陷阱**：`calculate-price` 返回**分**，`order-list` 返回**元的字符串**，两者相反，混用=数量级错误。
+5. **单位陷阱**：`calculate-price` 返回**分**（实测 `price=3450` → 34.50 元），`order-list` 返回**元的字符串**，两者相反，混用=数量级错误。
+6. **门店查询必须同时给 city 和 keyword**：只给其一分别报 `600058`（缺 keyword）/ `600050`（缺 city）。
+   schema 也**没有经纬度入参**，别自造字段。
 
 ## 执行链路（按顺序）
 
 ```
 1. now-time-info                 → 当前时间，判定夜班第几小时
 2. caffeine_budget()             → 按目标入睡时间倒推咖啡因红线，裁决 stop/one_more/ok
-3. query-nearby-stores           → 定位当前门店（必须带 beType + searchType）
-4. query-meals                   → 确认该门店此刻真实在售（必须带 storeCode+orderType+beType）
-5. list-nutrition-foods          → 能量/钠，叠加咖啡因基准表 → 睡眠负担分
-6. query-store-coupons           → 该门店可用券
-7. calculate-price               → 唯一计价来源（分）
-8. detect_coupon_trap()          → 回答「这张券值不值得为它凑单」
+3. query-nearby-stores           → city + keyword + beType + searchType（四项缺一不可）
+4. query-meals                   → 确认该门店此刻真实在售（storeCode+orderType+beType）
+   ⚠️ 只返回 code/tags，品名与价格要靠下一步反查
+5. calculate-price               → 唯一计价来源；品名/单价也从这里取（单位：分）
+6. list-nutrition-foods          → 能量/钠，叠加咖啡因基准表 → 睡眠负担分
+7. query-store-coupons           → 该门店可用券
+8. detect_coupon_trap()          → 双次核价，回答「这张券值不值得为它凑单」
 9. 输出「今夜补给包」             → 阶段 / 咖啡裁决 / 停止进食时间 / 阶段推荐 / 睡眠负担
 ```
 
@@ -79,7 +84,7 @@ agent_created: true
 ## 本地验证（无需 MCP Token）
 
 ```bash
-python -m unittest discover -s tests -v        # 20 个本地测试
+python -m unittest discover -s tests -v        # 24 个本地测试
 PYTHONPATH=src python -m nightfuel plan --now 01:30 --sleep 07:00 --consumed 290 --demo
 PYTHONPATH=src python -m nightfuel trap        # 凑单陷阱检测演示
 ```

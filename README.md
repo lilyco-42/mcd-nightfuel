@@ -6,6 +6,35 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-20%20passed-brightgreen.svg)
 
+## 已通过真实 MCP 端到端验证
+
+本项目**不是纸面实现** —— 全部契约均通过真实调用 `https://mcp.mcd.cn` 实测得出，
+验证脚本见 [`tools/verify_mcp.py`](tools/verify_mcp.py)（不含任何 Token，仅从环境变量读取）。
+
+```
+0. initialize            → mcd-mcp v1.0.0, protocolVersion 2024-11-05
+1. now-time-info         → OK
+2. list-nutrition-foods  → OK（确认无 caffeine 字段）
+3. query-nearby-stores   → 1450323 上海徐汇漕溪北路百脑汇餐厅
+4. query-meals           → OK（仅 code/tags，无名称无价格）
+5. calculate-price       → price=3450（分）= 34.50 元 精选单人餐三件套
+6. query-my-coupons / available-coupons / query-my-account → OK
+```
+
+### 实测发现的 3 个「文档没写」的坑
+
+| 坑 | 现象 | 后果 |
+|---|---|---|
+| 🔴 **门店查询要 city + keyword 一起给** | 只给 city 报 `600050`，只给 keyword 报 `600058` | 按官方 README 猜参数必然失败 |
+| 🔴 **`query-meals` 不返回名称和价格** | 只给 `{"code":"9900004064","tags":["爆款"]}` | 不查核价就答不出「多少钱」 |
+| 🔴 **schema 没有经纬度入参** | properties 只有 `beType`/`city`/`keyword`/`searchType` | 自造 latitude/longitude 是错的 |
+
+另有已实证的单位陷阱：`calculate-price` 返回**分**（`price=3450` → **34.50 元**），
+而 `order-list` 返回**元的字符串**，两者方向相反。
+
+以上全部固化为代码中的运行时断言 + 24 个本地回归测试，
+**不靠猜、不靠文档抄**。
+
 ## 为什么做这个
 
 夜班/加班的人，打开麦当劳 App 的真实问题从来不是「哪套最便宜」——
@@ -85,7 +114,7 @@ Claude Code / Cursor / WorkBuddy 等支持 Streamable HTTP + `Authorization: Bea
 引擎逻辑完全可离线验证，方便二次开发：
 
 ```bash
-python -m unittest discover -s tests -v                                  # 20 passed
+python -m unittest discover -s tests -v                                  # 24 passed
 PYTHONPATH=src python -m nightfuel plan --now 01:30 --sleep 07:00 --consumed 290 --demo
 PYTHONPATH=src python -m nightfuel trap                                 # 凑单陷阱演示
 ```
@@ -106,7 +135,8 @@ PYTHONPATH=src python -m nightfuel trap                                 # 凑单
 │   ├── planner.py                   # 夜班四阶段决策周期引擎
 │   ├── demo_data.py                 # DEMO 样本（无真实价格）
 │   └── cli.py                       # 命令行入口
-└── tests/test_nightfuel.py          # 20 个本地测试
+├── tools/verify_mcp.py              # 真实 MCP 链路验证脚本（不含 Token）
+└── tests/test_nightfuel.py          # 24 个本地测试
 ```
 
 ## 目标用户

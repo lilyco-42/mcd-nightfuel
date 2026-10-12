@@ -44,24 +44,51 @@
 | `query-my-account` | 积分账户信息 | 判断积分兑换是否值得 |
 | `campaign-calendar` | 当月营销活动 | 判断今夜是否有专属活动 |
 
-### 2.3 实测发现的调用契约（重要）
+### 2.3 实测发现的调用契约（⚠️ 全部经真实调用验证，2026-10-12）
 
-以下细节来自对官方 Server 的**实际调用验证**，官方文档未明确说明，但对跑通链路是必需的：
+本项目的契约不是抄文档，而是**逐条实测出来的**。官方 README 未写明的部分，
+以本节表格为准；每条都在 `src/nightfuel/mcp_adapter.py` 中固化为**运行时断言**，
+并在 `tests/test_nightfuel.py` 中有对应回归测试。
 
 | 发现 | 说明 |
 |---|---|
-| **门店查询必须带 `beType` + `searchType`** | `query-nearby-stores` 这两个参数为必传，纯经纬度查询会报参数校验失败。到店自提 `beType=1`；`searchType=1` 收藏门店、`2` 按位置 |
-| **菜单与券查询必须传三件套** | `query-meals` / `query-store-coupons` 均要求 `storeCode` + `orderType` + `beType` 同时传入；到店自取为 `orderType=1, beType=1` |
+| 🔴 **`query-nearby-stores` 的 `city` 与 `keyword` 必须同时提供** | 只给 `city` 或只给 `keyword` 都会失败：`keyword` 缺失报 `600058 城市名或者关键词不能为空`；`city` 缺失报 `600050 收藏餐厅列表为空，请您提供城市+关键词进行搜索`。实测 `{"city":"上海","keyword":"徐家汇","searchType":2,"beType":1}` 返回成功（门店 `1450323` 上海徐汇漕溪北路百脑汇餐厅） |
+| 🔴 **schema 不暴露 latitude/longitude** | 官方 inputSchema 的 properties 只有 `beType` / `city` / `keyword` / `searchType`，**没有经纬度入参**。定位由服务端按 city+keyword 处理，别自造经纬度字段 |
+| **必传字段以 inputSchema.required 为准** | `query-nearby-stores` → `["beType","searchType"]`；`query-meals` 与 `calculate-price` → `["storeCode","orderType","beType"]` |
+| **`beType` 有 4 个合法值** | `1` 到店自提 / `2` 麦乐送到家 / `5` 得来速车道取餐(Drive Through) / `6` 企业团餐。**只有 1、2 是文档常提的，5 和 6 同样合法** |
+| **`beCode` 与 `storeCode` 配对使用** | 从 `query-nearby-stores` 返回结果中一并取回，得来速等场景必填 |
+| 🔴 **`query-meals` 只返回 `code` 和 `tags`，没有名称也没有价格** | 实测返回形如 `{"code":"9900004064","tags":["爆款"]}`。**品名与单价必须从 `calculate-price` 的 `productList[].productName` / `subtotal` 反查** —— 这是本项目「枚举与计价分离」的物理依据 |
+| 🔴 **`calculate-price` 的金额单位是「分」（已实证）** | 真实返回 `{"price":3450,...,"productName":"精选单人餐三件套"}` → **34.50 元**。同响应含 `productOriginalPrice` / `productPrice` / `originalPrice` / `discount`，均为分 |
+| **`calculate-price` 会回传取餐方式** | `takeWayList` 含 `eat-in`（堂食）/ `take-in-store`（外带），可在结果中一并展示 |
+| **`calculate-price` 会回传门槛差额** | `enjoyable.balance` 表示「距可享受优惠还差多少分」，是凑单判断的官方依据，无需自行推算 |
+| **菜单/券查询必须传三件套** | `query-meals` / `query-store-coupons` 均要求 `storeCode` + `orderType` + `beType`；到店自取为 `orderType=1, beType=1` |
 | **`calculate-price` 的商品字段是 `items` 而非 `meals`** | 格式为 `items: [{productCode, quantity}]`，用错字段名直接报参数校验失败 |
-| **金额单位是「分」** | `calculate-price` 返回的 `price` / `discount` / `productPrice` 均为**整数分**，展示前必须 `/100` |
-| **`calculate-price` 会回传门槛差额** | `enjoyable.balance` 表示「距可享受优惠还差多少分」，这是凑单值不值得的**官方数据支撑**，无需自行推算 |
 | **`order-list` 的金额单位是「元」，且是字符串** | `realTotalAmount` 形如 `"15.5"`，与 `calculate-price` 的「分」**完全相反** |
 | **`order-list` 无需任何参数** | 传参反而校验失败 |
 | **历史订单含退款单** | `orderStatus` 有「整单退款」，必须过滤，否则消费画像虚高 |
-| **`list-nutrition-foods` 不含咖啡因** | 仅返回能量、蛋白质、脂肪、碳水化合物、钠、钙；咖啡因需另取基准数据 |
+| **`list-nutrition-foods` 不含咖啡因** | `required: []`，返回能量、蛋白质、脂肪、碳水化合物、钠、钙；**无咖啡因字段** |
+| **工具总数 35 个** | 以 `tools/list` 实测为准（README 文本中夹有客户端名，勿据此计数） |
 | **限流** | 超过 600 次/分钟返回 429 |
 
 > ⚠️ **最容易出错的地方**：`calculate-price` 单位是「分」，`order-list` 是「元」，两者方向相反。
+> ⚠️ **最容易漏掉的坑**：`query-meals` 不给品名和价格。不查 `calculate-price` 就无法告诉用户「这个多少钱」。
+
+### 2.4 真实调用验证记录（可复现）
+
+```text
+$ python tools/verify_mcp.py        # Token 仅从环境变量读取
+
+0. initialize      → mcd-mcp v1.0.0, protocolVersion 2024-11-05
+1. now-time-info   → OK
+2. list-nutrition-foods → OK（确认无 caffeine 字段）
+3. query-nearby-stores  → city+keyword 必填（600058 / 600050 已复现）
+4. query-meals     → OK（仅 code/tags）
+5. calculate-price → price=3450（分）= 34.50 元 精选单人餐三件套
+6. query-my-coupons / available-coupons / query-my-account → OK
+```
+
+验证脚本 `tools/verify_mcp.py` 不含任何 Token，仅从环境变量 `MCD_MCP_TOKEN` 读取。
+验证过程**未调用任何写操作**（未下单、未领券、未取消订单）。
 
 上述契约已在 `src/nightfuel/mcp_adapter.py` 中以**运行时断言**固化（`ContractError`），
 并在 `tests/test_nightfuel.py` 中有对应测试，不会因文档缺失而靠猜。

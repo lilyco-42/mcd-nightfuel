@@ -43,24 +43,67 @@ class TestUnits(unittest.TestCase):
 
 
 class TestContracts(unittest.TestCase):
-    def test_nearby_requires_betype_and_searchtype(self):
-        params = nearby_store_params(latitude=31.23, longitude=121.47)
+    def test_nearby_requires_city_and_keyword(self):
+        """实测：city 与 keyword 必须同时给，缺一分别报 600058 / 600050。"""
+        params = nearby_store_params(be_type=1, search_type=2, city="上海", keyword="徐家汇")
         self.assertEqual(params["beType"], 1)
         self.assertEqual(params["searchType"], 2)
         with self.assertRaises(ContractError):
-            nearby_store_params(latitude=31.23, longitude=121.47, be_type=9)
+            nearby_store_params(be_type=1, search_type=2)  # 两者都缺
+        with self.assertRaises(ContractError):
+            nearby_store_params(be_type=9, search_type=2, city="上海", keyword="徐家汇")
+        with self.assertRaises(ContractError):
+            nearby_store_params(be_type=1, search_type=7, city="上海", keyword="徐家汇")
 
     def test_store_context_triple(self):
-        params = store_context_params(store_code="S001")
-        self.assertEqual(params, {"storeCode": "S001", "orderType": 1, "beType": 1})
+        params = store_context_params(store_code="1450323")
+        self.assertEqual(params, {"storeCode": "1450323", "orderType": 1, "beType": 1})
         with self.assertRaises(ContractError):
             store_context_params(store_code="")
+
+    def test_drive_through_be_type_allowed(self):
+        """实测 schema：beType=5 是得来速车道取餐。"""
+        self.assertEqual(store_context_params(store_code="S1", be_type=5)["beType"], 5)
 
     def test_calculate_price_items_field_name(self):
         items = calculate_price_items([("A1", 2)])
         self.assertEqual(items, [{"productCode": "A1", "quantity": 2}])
         with self.assertRaises(ContractError):
             calculate_price_items([])
+
+
+class TestRealResponseShape(unittest.TestCase):
+    """以下断言全部来自 2026-10-12 对 mcp.mcd.cn 的真实调用。"""
+
+    def test_price_3450_fen_is_34_50_yuan(self):
+        """真实返回：price=3450（分）→ 34.50 元 精选单人餐三件套。"""
+        resp = {
+            "price": 3450,
+            "discount": 0,
+            "productList": [{
+                "productCode": "9900004064",
+                "productName": "精选单人餐三件套",
+                "quantity": 1,
+                "originalSubtotal": 3450,
+                "subtotal": 3450,
+            }],
+        }
+        snap = PriceSnapshot.from_response(resp)
+        self.assertEqual(fen_to_yuan(snap.total_fen), 34.50)
+        self.assertEqual(snap.item_names(), ["精选单人餐三件套"])
+        self.assertEqual(snap.unit_fen("9900004064"), 3450)
+
+    def test_menu_has_no_name_or_price(self):
+        """query-meals 只给 code/tags，品名与价格必须从 calculate-price 反查。"""
+        menu_item = {"code": "9900004064", "tags": ["爆款"]}
+        self.assertNotIn("name", menu_item)
+        self.assertNotIn("price", menu_item)
+
+    def test_unit_price_divided_by_quantity(self):
+        resp = {"price": 6900, "productList": [
+            {"productCode": "A", "quantity": 2, "subtotal": 6900},
+        ]}
+        self.assertEqual(PriceSnapshot.from_response(resp).unit_fen("A"), 3450)
 
 
 class TestOrders(unittest.TestCase):
