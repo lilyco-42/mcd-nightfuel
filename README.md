@@ -139,7 +139,7 @@ PYTHONPATH=src python -m nightfuel trap                                 # 凑单
 ## 项目结构
 
 ```
-├── SKILL.md# WorkBuddy Skill 主体（也是技术说明）
+├── SKILL.md                      # WorkBuddy Skill 主体（也是技术说明）
 ├── MCP_INTEGRATION.md               # MCP Server / Tool / 调用流程（参赛必交）
 ├── CONTEST_DECLARATION.md           # 参赛声明（参赛必交）
 ├── mcp-config.example.json          # 脱敏 MCP 配置示例（参赛必交）
@@ -151,10 +151,10 @@ PYTHONPATH=src python -m nightfuel trap                                 # 凑单
 │   ├── demo_data.py                 # DEMO 样本（无真实价格）
 │   └── cli.py                       # 命令行入口
 ├── tools/
-│   ├── verify_mcp.py             # 真实 MCP 链路验证脚本（不含 Token）
-│   └── make_demo_gif.py          # 生成 README 终端实录 GIF（实时抓取 CLI 输出）
-├── assets/demo.gif                 # README 顶部录屏
-└── tests/test_nightfuel.py          # 24 个本地测试
+│   ├── verify_mcp.py            # 真实 MCP 链路验证脚本（不含 Token）
+│   └── make_demo_gif.py         # 生成 README 终端实录 GIF（实时抓取 CLI 输出）
+├── assets/demo.gif               # README 顶部录屏
+└── tests/test_nightfuel.py        # 24 个本地测试
 ```
 
 ## 目标用户
