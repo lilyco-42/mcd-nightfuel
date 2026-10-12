@@ -2,9 +2,26 @@
 
 > 一个给夜班人群用的麦当劳 Skill：把「一夜」当成一个完整决策周期，而不是点一餐。
 
+![demo](assets/demo.gif)
+
+> 🎬 上面的录屏是**真实运行结果**，由 [`tools/make_demo_gif.py`](tools/make_demo_gif.py) 实时抓取 CLI 输出生成。
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
-![Tests](https://img.shields.io/badge/tests-20%20passed-brightgreen.svg)
+![Tests](https://img.shields.io/badge/tests-24%20passed-brightgreen.svg)
+![MCP](https://img.shields.io/badge/MCP-verified%20end--to--end-ff5f5f.svg)
+
+## 30 秒看懂
+
+凌晨一点半，你还要再撑三小时。NightFuel 给出的不是「最便宜的套餐」，而是**这一夜怎么排**：
+
+| 它回答 | 怎么算 |
+|---|---|
+| 现在该吃什么 | `now-time-info` 判阶段 → `query-meals` 确认此刻真实在售 |
+| 咖啡还能不能喝 | 目标入睡时间 − 半衰期 5h 反推红线 + 400mg 日上限裁决 |
+| 几点前别吃了 | 睡前 2 小时强制停止进食 |
+| 这顿会不会毁掉睡眠 | 咖啡因残留 + 高钠 + 热量三维加权「睡眠负担分」 |
+| 这张券值不值得凑 | `calculate-price` 双次核价 + 凑单陷阱检测 |
 
 ## 已通过真实 MCP 端到端验证
 
@@ -67,16 +84,14 @@
 > **不含咖啡因字段**。因此咖啡因用量取自本地公开基准表（`src/nightfuel/caffeine.py`），
 > 我们**不会把估算值说成 MCP 实时数据**。
 
-## 效果
+## 四个夜班阶段的建议差异
 
-```text
-## 今夜补给包 · 01:30 · 深夜
-- 阶段策略：轻食优先，少油少钠，把钠和热量压下去
-- 咖啡裁决：还剩 110mg 额度，且未过 02:00 —— 最多再来一杯中杯，之后转无咖啡因饮品。
-- 建议停止进食：05:00（睡前 2 小时）
-- 阶段推荐：麦香鱼、麦茶
-- 睡眠负担：钠 1025mg 偏高，口渴影响睡眠，建议配无糖饮品
-```
+| 阶段 | 时间 | 推荐 | 咖啡因 |
+|---|---|---|---|
+| 入夜 | 18:00–21:00 | 主食打底 | 第一杯咖啡在这里 |
+| 续航 | 21:00–01:00 | 顶饱低渣 | 配额用完 |
+| 深夜 | 01:00–04:00 | 轻食、少钠 | 只看剩余额度 |
+| 收尾 | 04:00–06:00 | 温食为主 | 强制停咖啡 |
 
 ## 安装
 
@@ -135,7 +150,10 @@ PYTHONPATH=src python -m nightfuel trap                                 # 凑单
 │   ├── planner.py                   # 夜班四阶段决策周期引擎
 │   ├── demo_data.py                 # DEMO 样本（无真实价格）
 │   └── cli.py                       # 命令行入口
-├── tools/verify_mcp.py              # 真实 MCP 链路验证脚本（不含 Token）
+├── tools/
+│   ├── verify_mcp.py             # 真实 MCP 链路验证脚本（不含 Token）
+│   └── make_demo_gif.py          # 生成 README 终端实录 GIF（实时抓取 CLI 输出）
+├── assets/demo.gif                 # README 顶部录屏
 └── tests/test_nightfuel.py          # 24 个本地测试
 ```
 
