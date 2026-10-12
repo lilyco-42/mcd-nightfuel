@@ -6,6 +6,8 @@
 
 > 🎬 上面的录屏是**真实运行结果**，由 [`tools/make_demo_gif.py`](tools/make_demo_gif.py) 实时抓取 CLI 输出生成。
 
+🌐 **在线体验（无需安装，30 秒看懂）**：https://lilyco-42.github.io/mcd-nightfuel/
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-24%20passed-brightgreen.svg)
@@ -55,6 +57,19 @@
 
 以上全部固化为代码中的运行时断言 + 24 个本地回归测试，
 **不靠猜、不靠文档抄**。
+
+## 在线体验
+
+不想装？浏览器直接玩：
+
+👉 **https://lilyco-42.github.io/mcd-nightfuel/**
+
+内置 4 个人群预设（夜班运维 / 加班赶稿 / 深夜客服 / 考试周），
+拖动时间和咖啡因输入，实时看四阶段裁决、咖啡因红线、睡眠负担分。
+
+Demo 里的算法与 `src/nightfuel/` **逐案一致** —— 这不是手写前端效果，
+`tests/test_demo_parity.py` 会把 Demo 里的 JS 算法抽出来用 Node 执行，
+与 Python 引擎做逐字段比对（首轮就抓出 8 处漂移，已修）。
 
 ## 为什么做这个
 
