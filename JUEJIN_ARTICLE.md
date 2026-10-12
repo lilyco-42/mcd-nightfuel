@@ -282,6 +282,9 @@ def nearby_store_params(*, be_type, search_type, city=None, keyword=None):
 
 这个项目参加的是**麦当劳程序员创意开发大赛**（1024 专场），排名按 GitHub Star 计。
 
+**不想装？30 秒在线体验**（内置夜班运维/加班/客服/考试周四个人群预设）：
+👉 https://lilyco-42.github.io/mcd-nightfuel/
+
 如果这些坑对你有用，欢迎 Star 支持一下：
 👉 **https://github.com/lilyco-42/mcd-nightfuel**
 
