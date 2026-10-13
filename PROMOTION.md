@@ -256,7 +256,7 @@ github.com/lilyco-42/mcd-nightfuel
 | README 首屏 | 「30 秒看懂」问答表 + KPI 数字表 | ✅ 已做 |
 | Releases | 打一个 `v1.0` tag + 说明（比裸 commit 更专业） | ✅ 已做 |
 | CI | 4 个 Python 版本矩阵 + README CI 徽章 | ✅ 已做 |
-| Discussions | 开一个讨论区问「你夜班最想解决什么」，收集真实需求 | 建议做 |
+| Discussions | 开一个讨论区问「你夜班最想解决什么」，收集真实需求 | ✅ 已做（discussions/1，Ideas 区） |
 | Star 自荐 | 加到自己的 README / 个人主页（合规：真实项目自荐） | 建议做 |
 
 ---
