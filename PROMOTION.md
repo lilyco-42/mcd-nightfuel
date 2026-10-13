@@ -2,23 +2,24 @@
 
 > 项目：https://github.com/lilyco-42/mcd-nightfuel
 > 赛事：https://github.com/M-China/mcd-developer-innovation-challenge/issues/505
-> 截止：2026-10-25 23:59（排名按Star，10-26 00:00 截榜，当前进榜线≈ 4★）
+> 截止：2026-10-25 23:59（排名按Star，10-26 00:00 截榜，当前进榜线≈ 6★，见 RANKING.md）
 
 ---
 
 ## 传播主轴（所有平台共用这一套叙事）
 
-**不要卖「一个麦当劳点餐工具」，要卖「三个没人告诉你的实测坑」。**
+**不要卖「一个麦当劳点餐工具」，要卖「四个没人告诉你的实测坑」。**
 
-技术人转发的是干货，不是广告。三个坑是天然的传播锚点：
+技术人转发的是干货，不是广告。四个坑是天然的传播锚点：
 
 | 坑 | 一句话钩子 |
 |---|---|
 | 门店查询要 city + keyword 一起给 | 「只给城市会报 600050，只给关键词报 600058」 |
 | query-meals 不返回名称和价格 | 「拿到菜单你以为能报价了？不能」 |
 | calculate-price 返回「分」 | 「3450 不是 3450 元」 |
+| 凌晨查门店回你「门店已关闭」 | 「businessStatus 字段就在返回里，但没人告诉你该看」 |
 
-标题公式：**「接入某 MCP 时踩的 3 个坑，第 3 个让我怀疑人生」**
+标题公式：**「接入某 MCP 时踩的 4 个坑，第 4 个让我怀疑人生」**
 
 ---
 
@@ -73,7 +74,9 @@
 麦当劳官方 MCP 的坑我全踩了——
 查门店要城市和关键词一起给、
 菜单接口不返回价格（得另外调核价）、
-核价返回的单位是「分」不是元。
+核价返回的单位是「分」不是元、
+凌晨查门店它还只会回你一句「门店已关闭」的错误码
+（其实返回里带营业状态字段，没人告诉你该看）。
 全写进 README 了，能省你半天。
 
 ⭐ GitHub 搜 mcd-nightfuel，或者主页第一个链接
@@ -86,13 +89,13 @@
 ### 笔记 2（技术向，钓工程师）
 
 **标题**
-- 接麦当劳 MCP 踩了 3 个坑，才发现官方文档没写
+- 接麦当劳 MCP 踩了 4 个坑，才发现官方文档没写
 
 **正文**
 
 ```
 之前参加麦当劳 MCP 的创意赛，做了个夜班场景的 Skill。
-接 API 的时候发现三个坑，官方 README 里完全没提，
+接 API 的时候发现四个坑，官方 README 里完全没提，
 但你只要按文档写就一定会失败。
 
 ① query-nearby-stores 要city 和 keyword 一起传
@@ -111,13 +114,21 @@
    而 order-list 返回的是元的字符串 "15.5"
    两个方向相反，混用就是数量级错误
 
+④ 凌晨查门店，它回你一句「门店可能已关闭」（600057）
+   这个坑凌晨一点录数据才遇到：query-nearby-stores 的返回里
+   一直带着 businessStatus 字段和营业起止时间，没人告诉你该先看它
+   非 24h 门店（06:30–23:00）非营业时段查菜单直接报错
+   夜班场景第一决策点明明是「这家店开着吗」，
+   答案在字段里，不在错误码里
+   顺带：售罄报 60006（蓝莓派实测已下架），暂停营业报 60003
+
 还有个坑值得单说：
 list-nutrition-foods 根本不返回咖啡因字段。
 所以任何「AI 帮你控制咖啡因」的功能，
 咖啡因数据都只能来自本地基准表——
 那你就得诚实标注，不能假装是实时数据。
 
-这三个坑我全固化成代码里的运行时断言 + 24 个回归测试，
+这四个坑我全固化成代码里的运行时断言 + 28 个回归测试，
 验证脚本也开源了，别人能自己复现。
 
 ⭐ github.com/lilyco-42/mcd-nightfuel
@@ -133,16 +144,17 @@ list-nutrition-foods 根本不返回咖啡因字段。
 
 ## 二、掘金（技术长文，最容易被同行转发收藏）
 
-**标题**：接入麦当劳 MCP 踩了 3 个坑，官方文档一个都没写
+**标题**：接入麦当劳 MCP 踩了 4 个坑，官方文档一个都没写
 
 **结构**：
 1. 开场：参加麦当劳 MCP 创意赛，发现官方文档是「不够用」的
 2. 坑1：门店查询的四个必填项（附实测报错码）
 3. 坑 2：菜单接口不返回价格 —— 「枚举与计价分离」的物理依据
 4. 坑 3：分/元单位陷阱（附真实返回JSON）
-5. 附加：营养接口没有咖啡因字段（诚实声明的做法）
-6. 怎么把这些坑固化成代码：运行时断言 + 回归测试
-7. 项目地址 + 赛事入口
+5. 坑 4：凌晨查门店回 600057 —— businessStatus 才是第一决策点
+6. 附加：营养接口没有咖啡因字段（诚实声明的做法）
+7. 怎么把这些坑固化成代码：运行时断言 + 回归测试
+8. 项目地址 + 赛事入口
 
 **技术细节可直接从这些文件取**（都是实测过的）：
 - 契约表：`MCP_INTEGRATION.md` 的 2.3 节
@@ -156,12 +168,12 @@ list-nutrition-foods 根本不返回咖啡因字段。
 
 ## 三、V2EX（短平快，标题党友好）
 
-**标题**：接入麦当劳 MCP 时踩了 3 个坑，官方文档都没写
+**标题**：接入麦当劳 MCP 时踩了 4 个坑，官方文档都没写
 
 **正文**（V2EX 偏好短，不铺垫）：
 
 ```
-参加麦当劳 MCP 创意赛做个 Skill，接 API 时发现三个坑，
+参加麦当劳 MCP 创意赛做个 Skill，接 API 时发现四个坑，
 官方 README 里完全没写，按文档写必失败：
 
 1. query-nearby-stores 要 city + keyword 一起传
@@ -176,11 +188,16 @@ list-nutrition-foods 根本不返回咖啡因字段。
    price=3450 是 34.50 元
    order-list 返回的却是元的字符串 "15.5"，方向相反
 
+4. 凌晨查门店，它回你一句「门店可能已关闭」（600057）
+   返回里明明带着 businessStatus 字段和营业时间，没人告诉你该先看
+   非 24h 门店非营业时段查菜单直接报错
+   顺带：售罄报 60006（蓝莓派实测已下架），暂停营业报 60003
+
 还有个：list-nutrition-foods 不含咖啡因字段，
 所以「AI 控制咖啡因」的咖啡因数据只能来自本地表，
 得诚实标注来源。
 
-把坑固化成运行时断言 + 24 个回归测试，验证脚本可复现：
+把坑固化成运行时断言 + 28 个回归测试，验证脚本可复现：
 https://github.com/lilyco-42/mcd-nightfuel
 
 参赛作品：https://github.com/M-China/mcd-developer-innovation-challenge/issues/505
@@ -200,7 +217,7 @@ https://github.com/lilyco-42/mcd-nightfuel
 3. 我做的假设翻转：先问「你能几点睡」
 4. 咖啡因的算法（半衰期倒推，讲清原理）
 5. 高钠/热量为什么影响睡眠
-6. 工程上怎么保证不胡说：计价分离 + 契约断言 + 24测试
+6. 工程上怎么保证不胡说：计价分离 + 契约断言 + 28 测试
 7. 开源地址 + 局限（咖啡因数据来源的诚实说明）
 
 ---
@@ -210,15 +227,17 @@ https://github.com/lilyco-42/mcd-nightfuel
 ```
 Built a night-shift AI Skill on McDonald's official MCP.
 
-The interesting part wasn't the AI — it was the 3 API traps
+The interesting part wasn't the AI — it was the 4 API traps
 the official docs don't mention:
 
 1. query-nearby-stores needs city AND keyword together
    (missing either → 600050 / 600058)
 2. query-meals returns NO names, NO prices — just codes
 3. calculate-price returns cents, but order-list returns yuan
+4. at 1am it answers "store may be closed" (600057) —
+   the businessStatus field was in the response all along
 
-I turned all 3 into runtime assertions + 24 regression tests.
+I turned all 4 into runtime assertions + 28 regression tests.
 Verification script included, so you can reproduce it.
 
 github.com/lilyco-42/mcd-nightfuel
@@ -233,17 +252,18 @@ github.com/lilyco-42/mcd-nightfuel
 | Topics | 加 9 个：`mcd-mcp` `nightshift` `claude-skill` `mcp-server` `ai-agent` `workbuddy` 等 | ✅ 已做 |
 | Description | 带🌙 emoji + 一句话价值 + 「已通过真实 MCP 端到端验证」 | ✅ 已做 |
 | Homepage | 指向参赛 issue #505 | ✅ 已做 |
-| README 顶部 | 终端录屏 GIF（已生成，非PS） | ✅ 已做 |
-| README 首屏 | 「30 秒看懂」问答表 | ✅ 已做 |
-| Releases | 打一个 `v0.1.0` tag + 说明（比裸 commit 更专业） | 建议做 |
+| README 顶部 | banner.svg + 终端录屏 GIF（已生成，非PS） | ✅ 已做 |
+| README 首屏 | 「30 秒看懂」问答表 + KPI 数字表 | ✅ 已做 |
+| Releases | 打一个 `v1.0` tag + 说明（比裸 commit 更专业） | ✅ 已做 |
+| CI | 4 个 Python 版本矩阵 + README CI 徽章 | ✅ 已做 |
 | Discussions | 开一个讨论区问「你夜班最想解决什么」，收集真实需求 | 建议做 |
 | Star 自荐 | 加到自己的 README / 个人主页（合规：真实项目自荐） | 建议做 |
 
 ---
 
-## 七、冷启动到 4★ 的现实路径
+## 七、冷启动到 6★ 的现实路径
 
-现在 1★，进榜线约 4★，还有 13 天。
+现在 1★，进榜线 6★（RANKING.md 第 84–100 名并列 6★），还有 12 天。
 
 **合规红线（活动规则明确禁止）**：
 > 「利用机器人软件、脚本工具，利用平台漏洞，抄袭盗用，恶意作弊、刷榜、提交虚假信息，操纵Star 数据」
@@ -266,12 +286,12 @@ github.com/lilyco-42/mcd-nightfuel
 
 ---
 
-## 八、发帖节奏建议（13 天）
+## 八、发帖节奏建议（12 天）
 
 | 时间 | 动作 |
 |---|---|
-| 今天（10-12） | 掘金发技术长文 + V2EX 发短贴（同一内容不同形态） |
-| 10-13~14 | 小红书发笔记 1（场景向，打夜班人群） |
+| 今天（10-13） | 掘金发技术长文 + V2EX 发短贴（同一内容不同形态） |
+| 10-14~15 | 小红书发笔记 1（场景向，打夜班人群） |
 | 10-16左右 | 小红书发笔记 2（技术向，钓工程师） |
 | 10-18左右 | 知乎发回答 |
 | 持续 | GitHub Discussions 开讨论区收集需求，顺手在 README 回应 Issues |
