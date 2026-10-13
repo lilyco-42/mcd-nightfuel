@@ -1,30 +1,67 @@
 # 麦麦深夜补给官 · NightFuel
 
-![banner](assets/banner.svg)
+<div align="center">
 
-> 一个给夜班人群用的麦当劳 Skill：把「一夜」当成一个完整决策周期，而不是点一餐。
+<img src="./assets/banner.svg" alt="麦麦深夜补给官 — NightFuel" width="100%">
 
-[![CI](https://github.com/lilyco-42/mcd-nightfuel/actions/workflows/tests.yml/badge.svg)](https://github.com/lilyco-42/mcd-nightfuel/actions/workflows/tests.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
-![Tests](https://img.shields.io/badge/tests-28%20passed-brightgreen.svg)
-![MCP](https://img.shields.io/badge/MCP-verified%20end--to--end-ff5f5f.svg)
+<br>
 
-🌐 **在线体验（无需安装，30 秒看懂）**：https://lilyco-42.github.io/mcd-nightfuel/
+[![tests](https://github.com/lilyco-42/mcd-nightfuel/actions/workflows/tests.yml/badge.svg)](https://github.com/lilyco-42/mcd-nightfuel/actions/workflows/tests.yml)
+[![deps](https://img.shields.io/badge/dependencies-0-3FB950?style=flat-square)](#30-秒快速体验)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](#30-秒快速体验)
+[![Token](https://img.shields.io/badge/Token-不需要-blue?style=flat-square)](#30-秒快速体验)
+[![License: MIT](https://img.shields.io/badge/License-MIT-FFC72C?style=flat-square)](./LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-mcp.mcd.cn-DA291C?style=flat-square)](https://mcp.mcd.cn)
+
+**市面上的夜班工具都在回答「这一餐怎么点最省」。**
+**我们多回答一个问题：「这一夜你会废掉明天的睡眠吗？」**
+
+[30 秒体验](#30-秒快速体验) · [数字说话](#数字说话) · [实测踩坑](#已通过真实-mcp-端到端验证) · [在线 Demo](#在线体验) · [WorkBuddy 开发方式](#️-开发方式腾讯-workbuddy)
+
+🌐 **在线体验（无需安装）**：https://lilyco-42.github.io/mcd-nightfuel/
+
+</div>
+
+---
+
+<img src="./assets/demo-dual-view.svg" alt="同一个凌晨 01:30，两种问法：左=普通点餐视角，右=NightFuel 视角" width="100%">
+
+基于麦当劳中国 MCP 打造的夜班补给决策 Skill，做两件事：
+
+**短期 —— 这一夜怎么排**
+- 拆成`入夜 / 续航 / 深夜 / 收尾` 四阶段，各阶段进食与咖啡因策略不同
+- 拉取**当前门店**实时菜单与价格（`businessStatus` 先判营业，再查在售）
+- 用 MCP 的 `calculate-price` 真实计价，回答「这张券值不值得为它凑单」
+
+**长期 —— 这一夜会不会毁掉明天**
+- **咖啡因红线倒推**：从目标入睡时间反推「最后一杯咖啡」时刻（入睡− 半衰期 5h）
+- **睡眠负担分**：咖啡因残留 + 高钠 + 夜宵热量三维加权，满分 100
+- 睡前 2 小时强制停止进食，夜深时段主动劝减轻食
+
+<div align="center">
+
+| 🌙 覆盖时段 | ☕ 咖啡因裁决 | 😴 睡眠负担分 | 🔑 使用门槛 |
+|:---:|:---:|:---:|:---:|
+| **18:00 – 06:00** | **stop / one_more / ok** | **三维加权 100 分** | 无需 Token 即可跑 |
+
+</div>
 
 ## 30 秒快速体验
-
-| 你想 | 命令 |
-|---|---|
-| 不装任何东西，浏览器玩 | 打开 <https://lilyco-42.github.io/mcd-nightfuel/>，拖动时间滑块看四阶段裁决 |
-| 本地看真实链路输出（零配置、零 Token） | `git clone` 后 `python demo.py`——读 `fixtures/` 里凌晨录制的真实 MCP 响应 |
-| 验证引擎没水分 | `python -m unittest discover -s tests -v`——28 个测试全绿 |
 
 ```bash
 git clone https://github.com/lilyco-42/mcd-nightfuel.git
 cd mcd-nightfuel
 python demo.py     # 4 步：定位营业门店 → 咖啡因红线 → 今夜补给包 → 真实核价
 ```
+
+**零第三方依赖**（只用标准库）、**不需要 MCP Token**、**不联网**。
+`demo.py` 读取 `fixtures/` 里凌晨录制的真实 MCP 响应，跑通完整链路。
+
+| 你想 | 命令 |
+|---|---|
+| 不装任何东西，浏览器玩 | 打开 <https://lilyco-42.github.io/mcd-nightfuel/>，拖动时间滑块看四阶段裁决 |
+| 本地看真实链路输出 | `python demo.py`——零配置、零 Token、零依赖 |
+| 验证引擎没水分 | `python -m unittest discover -s tests -v`——28 个测试全绿 |
 
 ## 30 秒看懂
 
@@ -229,17 +266,26 @@ PYTHONPATH=src python -m nightfuel trap                                   # 凑�
 │   ├── verify_mcp.py             # 真实 MCP 链路验证脚本（不含 Token）
 │   ├── record_fixtures.py        # 从真实 MCP 录制 fixtures（凌晨实录）
 │   ├── make_demo_gif.py          # 生成 README 终端实录 GIF（实时抓取 CLI 输出）
+│   ├── make_dual_view.py         # 生成左右对比传播图 demo-dual-view.svg
 │   └── make_social_cards.py      # 生成社交传播对比图
 ├── fixtures/                     # 6 个录制的真实 MCP 响应（公开数据，无账户信息）
 ├── docs/index.html               # 在线 Demo（GitHub Pages）
 ├── demo.py                       # 零配置演示入口
-├── assets/                       # banner / demo.gif / 社交卡片
+├── assets/                       # banner / 对比图 / demo.gif / 社交卡片
 ├── references/                   # 算法依据的公开标准与文献（FDA/EFSA/IOM）
 ├── tests/
 │   ├── test_nightfuel.py         # 引擎与契约测试
 │   └── test_demo_parity.py       # JS/Python 算法一致性（18 用例，Node 交叉执行）
 └── .github/workflows/tests.yml   # CI：4 个 Python 版本 × 测试 + 演示 + 泄漏检查
 ```
+
+## 这个项目可能对你有用，如果……
+
+- **你上夜班 / 熬夜 / 值夜勤**，凌晨要再撑几小时，关心「吃完会不会睡不着」
+- **你靠咖啡因续命**，想知道「今天这杯喝完，几点之后就别碰了」
+- **你在做 MCP 集成**，想知道官方文档之外的实战契约（city+keyword、单位陷阱、营业状态、错误码）
+- **你在选 AI 工具的垂直场景**，想看一个「不做什么工具、只做一个决策周期」的样本
+- **你在评估 AI 输出可信度**，想看一个把「估算数据 vs 实时数据」明确分开并写进 README 的做法
 
 ## 目标用户
 
