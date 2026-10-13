@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#0a0e27"/><stop offset="1" stop-color="#141c3a"/>
+</linearGradient></defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<circle cx="88" cy="62" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="238" cy="40" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="392" cy="84" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="536" cy="46" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="672" cy="92" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="818" cy="52" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="952" cy="76" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="1104" cy="44" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="140" cy="140" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="700" cy="140" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="1044" cy="158" r="1.8" fill="#c9d4f2" opacity="0.7"/>
+<circle cx="1076" cy="88" r="40" fill="#ffd54d"/>
+<circle cx="1056" cy="76" r="35" fill="#141c3a"/>
+<g>
+<path d="M 930 74 q 6 -9 0 -18" stroke="#7f8fc0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<path d="M 952 70 q 6 -9 0 -18" stroke="#7f8fc0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<rect x="918" y="92" width="80" height="66" rx="9" fill="#f0b429"/>
+<path d="M 998 105 h 12 a 16 16 0 0 1 0 32 h -12" fill="none" stroke="#f0b429" stroke-width="8" stroke-linecap="round"/>
+<rect x="918" y="92" width="80" height="9" rx="4" fill="#d99a17"/>
+<text x="958.0" y="134.0" font-size="30" fill="#7a4f00" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="bold">M</tspan></text>
+</g>
+<text x="64.0" y="190.0" font-size="62" fill="#f2f5ff" text-anchor="start"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="bold">麦麦深夜补给官</tspan></text>
+<text x="64.0" y="250.0" font-size="40" fill="#f0b429" text-anchor="start"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="bold">NightFuel</tspan></text>
+<text x="64.0" y="316.0" font-size="25" fill="#aeb9dd" text-anchor="start"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">市面上的工具都在回答「这一餐怎么点最省」</tspan></text>
+<text x="64.0" y="356.0" font-size="27" fill="#f2f5ff" text-anchor="start"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="bold">我们多回答一句：这一夜，会不会废掉明天的睡眠</tspan><tspan font-family="Consolas, 'Courier New', monospace" font-weight="bold">？</tspan></text>
+<rect x="64" y="418" width="300" height="30" rx="5" fill="#ffb84d"/>
+<text x="214.0" y="439.0" font-size="17" fill="#3a2a00" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="bold">入夜</tspan></text>
+<text x="214.0" y="470.0" font-size="14" fill="#aeb9dd" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="normal">18:00-21:00</tspan></text>
+<rect x="364" y="418" width="320" height="30" rx="5" fill="#7f9cf5"/>
+<text x="524.0" y="439.0" font-size="17" fill="#10193a" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="bold">续航</tspan></text>
+<text x="524.0" y="470.0" font-size="14" fill="#aeb9dd" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="normal">21:00-01:00</tspan></text>
+<rect x="684" y="418" width="300" height="30" rx="5" fill="#4c5fd7"/>
+<text x="834.0" y="439.0" font-size="17" fill="#eef1ff" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="bold">深夜</tspan></text>
+<text x="834.0" y="470.0" font-size="14" fill="#aeb9dd" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="normal">01:00-04:00</tspan></text>
+<rect x="984" y="418" width="172" height="30" rx="5" fill="#38b2ac"/>
+<text x="1070.0" y="439.0" font-size="17" fill="#10193a" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="bold">收尾</tspan></text>
+<text x="1070.0" y="470.0" font-size="14" fill="#aeb9dd" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="normal">04:00-06:00</tspan></text>
+<rect x="64" y="512" width="1072" height="1" fill="#2e3550"/>
+<text x="171.2" y="556.0" font-size="34" fill="#7ed07e" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="bold">35</tspan></text>
+<text x="171.2" y="584.0" font-size="15" fill="#aeb9dd" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">实测</tspan><tspan font-family="Consolas, 'Courier New', monospace" font-weight="normal"> MCP </tspan><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">工具</tspan></text>
+<text x="385.6" y="556.0" font-size="34" fill="#7ed07e" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="bold">19</tspan></text>
+<text x="385.6" y="584.0" font-size="15" fill="#aeb9dd" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">固化契约</tspan></text>
+<text x="600.0" y="556.0" font-size="34" fill="#7ed07e" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="bold">28</tspan></text>
+<text x="600.0" y="584.0" font-size="15" fill="#aeb9dd" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">测试全绿</tspan></text>
+<text x="814.4" y="556.0" font-size="34" fill="#7ed07e" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="bold">6</tspan></text>
+<text x="814.4" y="584.0" font-size="15" fill="#aeb9dd" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">真实</tspan><tspan font-family="Consolas, 'Courier New', monospace" font-weight="normal"> fixtures</tspan></text>
+<text x="1028.8" y="556.0" font-size="34" fill="#7ed07e" text-anchor="middle"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="bold">0</tspan></text>
+<text x="1028.8" y="584.0" font-size="15" fill="#aeb9dd" text-anchor="middle"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">第三方依赖</tspan></text>
+<text x="64.0" y="612.0" font-size="15" fill="#5d6a94" text-anchor="start"><tspan font-family="Consolas, 'Courier New', monospace" font-weight="normal">github.com/lilyco-42/mcd-nightfuel</tspan></text>
+<text x="1136.0" y="612.0" font-size="15" fill="#5d6a94" text-anchor="end"><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">麦当劳</tspan><tspan font-family="Consolas, 'Courier New', monospace" font-weight="normal"> MCP </tspan><tspan font-family="'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif" font-weight="normal">程序员创意开发大赛参赛作品</tspan></text>
+</svg>

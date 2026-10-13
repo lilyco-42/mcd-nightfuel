@@ -4,7 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麦麦深夜补给官 NightFuel · 在线体验</title>
-<meta name="description" content="夜班/加班场景的麦当劳 MCP Skill：四阶段决策周期 + 咖啡因红线倒推 + 睡眠负担分">
+<meta name="description" content="夜班/加班场景的麦当劳 MCP Skill：四阶段决策周期 + 咖啡因红线倒推 + 睡眠负担分。真实 MCP 端到端验证，实测发现 4 个官方文档未写的调用契约。">
+<link rel="canonical" href="https://lilyco-42.github.io/mcd-nightfuel/">
+
+<!-- Open Graph / 社交分享卡片（og:image 必须是位图，SVG 多数平台不渲染） -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="麦麦深夜补给官 NightFuel · 这一夜怎么过，才不毁掉明天">
+<meta property="og:description" content="夜班/加班人群的麦当劳 MCP 全链路 Skill。四阶段决策周期 + 咖啡因红线倒推 + 睡眠负担分。真实 MCP 端到端验证，4 个官方文档未写的调用契约。">
+<meta property="og:url" content="https://lilyco-42.github.io/mcd-nightfuel/">
+<meta property="og:image" content="https://raw.githubusercontent.com/lilyco-42/mcd-nightfuel/main/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="麦麦深夜补给官 NightFuel · 这一夜怎么过，才不毁掉明天">
+<meta name="twitter:description" content="夜班/加班人群的麦当劳 MCP 全链路 Skill。真实 MCP 端到端验证，4 个官方文档未写的调用契约。">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/lilyco-42/mcd-nightfuel/main/assets/og-image.png">
 <style>
   :root{
     --bg:#0f1117; --card:#1a1d27; --bar:#242835; --line:#2e3342;
@@ -157,15 +171,34 @@
                          "price": <span class="g">3450</span>   <span class="y">← 单位是「分」= 34.50 元</span>
 <span class="c">list-nutrition-foods</span>  → 能量/蛋白/脂肪/碳水/钠/钙  <span class="r">（无咖啡因字段）</span></pre>
       <div class="links">
-        <button class="btn" onclick="window.open('https://github.com/lilyco-42/mcd-nightfuel','_blank')">⭐ GitHub 仓库</button>
+        <button class="btn" onclick="window.open('https://github.com/lilyco-42/mcd-nightfuel','_blank')">⭐ Star 仓库支持一下</button>
         <button class="btn" onclick="window.open('https://github.com/M-China/mcd-developer-innovation-challenge/issues/505','_blank')">🏆 参赛作品 #505</button>
-        <button class="btn" onclick="window.open('https://github.com/lilyco-42/mcd-nightfuel/releases/tag/v0.1.0','_blank')">📦 Release v0.1.0</button>
+        <button class="btn" onclick="window.open('https://github.com/lilyco-42/mcd-nightfuel/releases/tag/v1.0.0','_blank')">📦 Release v1.0.0</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="win-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="win-title">这个项目可能对你有用，如果…</span>
+    </div>
+    <div class="win-body">
+      <p class="sub" style="margin-top:0">
+        你上夜班 / 熬夜 / 值夜勤，凌晨要再撑几小时，关心「吃完会不会睡不着」<br>
+        你靠咖啡因续命，想知道「今天这杯喝完，几点之后就别碰了」<br>
+        你在做 MCP 集成，想知道官方文档之外的实战契约（city+keyword、单位陷阱、营业状态、错误码）<br>
+        你在选 AI 工具的垂直场景，想看一个「不做工具、只做一个决策周期」的样本
+      </p>
+      <div class="links" style="margin-bottom:0">
+        <button class="btn" onclick="window.open('https://github.com/lilyco-42/mcd-nightfuel','_blank')">⭐ Star 一下（真的有用）</button>
+        <button class="btn" onclick="window.open('https://github.com/lilyco-42/mcd-nightfuel#30-秒快速体验','_blank')">📖 看怎么装</button>
       </div>
     </div>
   </div>
 
   <p class="foot">
-    算法与开源仓库 <code>src/nightfuel/</code> 一致 · 24 个本地测试覆盖<br>
+    算法与开源仓库 <code>src/nightfuel/</code> 一致 · 28 个本地测试（含 18 例 JS/Python 逐字段对拍）· CI 4 版本矩阵全绿<br>
     咖啡因数据来自本地公开基准表（MCP <code>list-nutrition-foods</code> 不含咖啡因字段），已如实标注<br>
     个人参赛作品，与麦当劳、腾讯 WorkBuddy 无隶属或背书关系
   </p>
