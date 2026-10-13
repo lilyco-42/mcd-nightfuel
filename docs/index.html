@@ -208,6 +208,10 @@
 /* ---- 算法：与 src/nightfuel/caffeine.py + planner.py 逐行对应 ---- */
 const DAILY_LIMIT = 400, HALF_LIFE_H = 5;
 
+// 门店营业状态：数据来自 fixtures/stores.json 录制的真实 MCP 响应
+// （24 小时门店 businessStatus=true，营业时间 00:00-23:59）
+const STORE = { name: '上海徐家汇餐厅', code: '1450034', openFrom: '00:00', openTo: '23:59' };
+
 const toMin = hhmm => { const [h,m] = hhmm.split(':').map(Number); return h*60+m; };
 const toHHMM = m => { const mm = Math.round(m) % (24*60);
   return `${String(Math.floor(mm/60)).padStart(2,'0')}:${String(mm%60).padStart(2,'0')}`; };
@@ -276,7 +280,8 @@ function advice(b, stage, load, consumed){
 
 function render(){
   const nowV = now.value, sleepV = sleep.value;
-  const consumed = +caf.value || 0, sodium = +na.value || 0, kcal = +document.getElementById('kcal').value || 0;
+  const consumed = +caf.value || 0, sodium = +na.value || 0,
+        kcal = +(document.getElementById('kcal')?.value || 0);
   const stage = stageOf(toMin(nowV)/60 | 0);
   const b = caffeineBudget(sleepV, nowV, consumed);
   const load = sleepLoad(consumed, sodium, kcal);
@@ -301,6 +306,12 @@ function render(){
     : b.verdict === 'one_more'
       ? `<b>咖啡裁决</b> 还剩 ${b.remaining}mg 额度，且未过 ${b.cutoff} —— 最多再来一杯中杯，之后转无咖啡因饮品。`
       : `<b>咖啡裁决</b> 额度充足（剩 ${b.remaining}mg）。但 ${b.cutoff} 之后必须停。`;
+
+  // 门店营业状态：来自 fixtures 录制的真实 businessStatus 字段
+  const openNow = toMin(nowV) >= toMin(STORE.openFrom) && toMin(nowV) <= toMin(STORE.openTo);
+  mcpNote.innerHTML = openNow
+    ? `<b>门店在营业</b> ${STORE.name} ${STORE.openFrom}-${STORE.openTo} · <code>businessStatus=true</code> —— 可以查菜单、可以下单。`
+    : `<b>门店已打烊</b> ${STORE.name} 营业时间 ${STORE.openFrom}-${STORE.openTo}，此刻 <code>businessStatus=false</code> —— 若直接查菜单会报 <code>600057 门店可能已关闭</code>。`;
 }
 
 const PRESETS = {
@@ -310,7 +321,7 @@ const PRESETS = {
   ex:{ now:'02:20', sleep:'06:30', caf:420, na:650 }
 };
 
-document.getElementById('presets').addEventListener('click', e => {
+document.getElementById('presets')?.addEventListener('click', e => {
   const chip = e.target.closest('.chip'); if (!chip) return;
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
   chip.classList.add('on');
@@ -319,18 +330,23 @@ document.getElementById('presets').addEventListener('click', e => {
   render();
 });
 
-['now','sleep','caf','na','kcal'].forEach(id => document.getElementById(id).addEventListener('input', render));
+// 注意：kcal 输入框是下面动态创建的，此时还不存在，故不在此批量绑定
+['now','sleep','caf','na'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', render);
+});
 const stageEl = document.getElementById('stage'), remain = document.getElementById('remain'),
       cutoff = document.getElementById('cutoff'), stopEat = document.getElementById('stopEat'),
       loadV = document.getElementById('load'), loadBar = document.getElementById('loadBar'),
-      adviceEl = document.getElementById('advice'), cafNote = document.getElementById('cafNote');
+      adviceEl = document.getElementById('advice'), cafNote = document.getElementById('cafNote'),
+      mcpNote = document.getElementById('mcpNote');
 
 // 补一个热量输入（前端演示用，真实值来自 MCP list-nutrition-foods）
 const kcalField = document.createElement('div');
 kcalField.className = 'field';
 kcalField.innerHTML = '<label>本餐热量 (kcal，参考)</label><input type="number" id="kcal" value="560" min="0" max="2000" step="10">';
-document.getElementById('na').closest('.row').appendChild(kcalField);
-document.getElementById('kcal').addEventListener('input', render);
+document.getElementById('na')?.closest('.row')?.appendChild(kcalField);
+document.getElementById('kcal')?.addEventListener('input', render);
 
 render();
 </script>
